@@ -329,5 +329,9 @@ env GOENV=/dev/null GOROOT=/usr/local/Cellar/go/1.24.6/libexec GOOS=linux GOARCH
     - `go test ./...` in `examples/troubleshooting/executor_unit`
     - `go build` for a Linux AMD64 release artifact of `go_walker`
 - Release updates:
-  - prepared a new repository release tag for the Go troubleshooting fork line
-  - tag target: `v0.6.0`
+  - created and pushed a new repository release tag for the Go troubleshooting fork line
+  - tag: `v0.6.0`
+  - release commit on `main`: `b4aff8b`
+  - published repository state:
+    - `main` pushed to `git@github.com:fuhao009/treesearch-go-troubleshooter.git`
+    - `v0.6.0` pushed to the same repository
