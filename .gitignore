@@ -216,5 +216,11 @@ benchmark_results/
 examples/benchmark/benchmark_results/
 examples/benchmark/indexes/
 examples/indexes/
+examples/troubleshooting/indexes/
+examples/troubleshooting/records/
+examples/troubleshooting/exports/
+examples/troubleshooting/go_walker/go_walker
+examples/troubleshooting/go_walker/treesearch-troubleshooting-walker
+examples/troubleshooting/executor_unit/executor_unit
 docs/internal/*
 examples/a.py
