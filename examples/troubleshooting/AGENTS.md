@@ -309,3 +309,25 @@ env GOENV=/dev/null GOROOT=/usr/local/Cellar/go/1.24.6/libexec GOOS=linux GOARCH
   - prepared a dedicated commit from local `main`
   - added a new SSH remote for the personal repository
   - pushed local `main` to the new GitHub repository
+
+### 13. 2026-03-24 repository finishing pass
+- Goal: make the newly published repository self-explanatory and buildable on GitHub without extra manual context.
+- Documentation updates:
+  - updated root `README.md` and `README_ZH.md`
+  - clarified that this repository now contains:
+    - the original Python TreeSearch library
+    - the offline Go troubleshooting runtime under `examples/troubleshooting/`
+  - added direct links from the root README files to:
+    - `examples/troubleshooting/README.md`
+    - `examples/troubleshooting/AGENTS.md`
+    - `分析.md`
+  - added a scope note to `分析.md` so it is clear that the document analyzes the Python retrieval core rather than the Go runtime
+- CI updates:
+  - added `.github/workflows/go-troubleshooter.yml`
+  - the new workflow runs:
+    - `go test ./...` in `examples/troubleshooting/go_walker`
+    - `go test ./...` in `examples/troubleshooting/executor_unit`
+    - `go build` for a Linux AMD64 release artifact of `go_walker`
+- Release updates:
+  - prepared a new repository release tag for the Go troubleshooting fork line
+  - tag target: `v0.6.0`

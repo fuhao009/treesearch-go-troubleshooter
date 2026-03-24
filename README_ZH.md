@@ -1,8 +1,8 @@
-[**🌐English**](https://github.com/shibing624/TreeSearch/blob/main/README.md) | [**🇨🇳中文**](https://github.com/shibing624/TreeSearch/blob/main/README_ZH.md)
+[**🌐English**](README.md) | [**🇨🇳中文**](README_ZH.md)
 
 <div align="center">
-  <a href="https://github.com/shibing624/TreeSearch">
-    <img src="https://raw.githubusercontent.com/shibing624/TreeSearch/main/docs/logo.svg" height="150" alt="Logo">
+  <a href=".">
+    <img src="docs/logo.svg" height="150" alt="Logo">
   </a>
 </div>
 
@@ -13,12 +13,15 @@
 [![Downloads](https://static.pepy.tech/badge/pytreesearch)](https://pepy.tech/project/pytreesearch)
 [![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![python_version](https://img.shields.io/badge/Python-3.10%2B-green.svg)](requirements.txt)
-[![GitHub issues](https://img.shields.io/github/issues/shibing624/TreeSearch.svg)](https://github.com/shibing624/TreeSearch/issues)
+[![Go Troubleshooter CI](https://github.com/fuhao009/treesearch-go-troubleshooter/actions/workflows/go-troubleshooter.yml/badge.svg)](https://github.com/fuhao009/treesearch-go-troubleshooter/actions/workflows/go-troubleshooter.yml)
+[![GitHub issues](https://img.shields.io/github/issues/fuhao009/treesearch-go-troubleshooter.svg)](https://github.com/fuhao009/treesearch-go-troubleshooter/issues)
 [![Wechat Group](https://img.shields.io/badge/wechat-group-green.svg?logo=wechat)](#社区与支持)
 
 **TreeSearch** 是一个结构感知的文档检索库。将文档解析为树结构，然后通过 FTS5 关键词匹配进行检索。支持 Markdown、纯文本、代码文件（Python AST + 正则、Java/Go/JS/C++ 等）、HTML、XML、JSON、CSV、PDF 和 DOCX。无需向量embedding，无需分chunk。
 
 毫秒检索万级文档和大型代码库，并保留文档结构，避免上下文丢失。
+
+这个 fork 保留了上游 Python TreeSearch 库，同时在 `examples/troubleshooting/` 下新增了一套面向生产排障的离线 Go 运行时。
 
 ## 安装
 
@@ -38,6 +41,50 @@ for doc in results["documents"]:
     for node in doc["nodes"]:
         print(f"[{node['score']:.2f}] {node['title']}")
         print(f"  {node['text'][:200]}")
+```
+
+## 这个仓库额外提供什么
+
+现在仓库里有两条主线：
+
+- `treesearch/`：原始的 Python 结构化检索库
+- `examples/troubleshooting/go_walker/`：一个单二进制离线 Go 排障运行时，带 Gin API、TreeSearch 检索路由、常驻调度、纯 Go 采集器，以及经验导入导出
+
+推荐直接看的入口：
+
+- [examples/troubleshooting/README.md](examples/troubleshooting/README.md)：离线排障运行时的完整使用方式
+- [examples/troubleshooting/AGENTS.md](examples/troubleshooting/AGENTS.md)：架构和操作记录
+- [分析.md](分析.md)：Python TreeSearch 核心源码分析
+
+## 离线 Go 故障排查运行时
+
+这套运行时用于长期离线排障，主特点是：
+
+- 导入 Markdown runbook 到 SQLite / FTS
+- 根据 query 或探针结果路由到一棵或多棵排障树
+- 执行 fenced `tsdiag` 动作块，不调用 shell
+- 把执行结果落成 JSON 经验，并回写索引
+- 持续运行 daemon job，并从重复经验自动生成新树
+
+快速启动：
+
+```bash
+cd examples/troubleshooting/go_walker
+go build
+
+./go_walker serve \
+  --listen 127.0.0.1:19065 \
+  --db ../indexes/service.db \
+  --record-dir ../records \
+  --generated-dir ../records/generated_trees
+
+curl -s -X POST http://127.0.0.1:19065/api/v1/playbooks/import \
+  -H 'Content-Type: application/json' \
+  -d '{"paths":["../playbooks/*.md"],"force":true}'
+
+curl -s -X POST http://127.0.0.1:19065/api/v1/run \
+  -H 'Content-Type: application/json' \
+  -d '{"doc_id":"host_anomaly_runbook","timeout_seconds":10}'
 ```
 
 

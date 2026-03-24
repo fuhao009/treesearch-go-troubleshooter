@@ -1,8 +1,8 @@
-[**🌐English**](https://github.com/shibing624/TreeSearch/blob/main/README.md) | [**🇨🇳中文**](https://github.com/shibing624/TreeSearch/blob/main/README_ZH.md)
+[**🌐English**](README.md) | [**🇨🇳中文**](README_ZH.md)
 
 <div align="center">
-  <a href="https://github.com/shibing624/TreeSearch">
-    <img src="https://raw.githubusercontent.com/shibing624/TreeSearch/main/docs/logo.svg" height="150" alt="Logo">
+  <a href=".">
+    <img src="docs/logo.svg" height="150" alt="Logo">
   </a>
 </div>
 
@@ -13,12 +13,15 @@
 [![Downloads](https://static.pepy.tech/badge/pytreesearch)](https://pepy.tech/project/pytreesearch)
 [![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![python_version](https://img.shields.io/badge/Python-3.10%2B-green.svg)](requirements.txt)
-[![GitHub issues](https://img.shields.io/github/issues/shibing624/TreeSearch.svg)](https://github.com/shibing624/TreeSearch/issues)
+[![Go Troubleshooter CI](https://github.com/fuhao009/treesearch-go-troubleshooter/actions/workflows/go-troubleshooter.yml/badge.svg)](https://github.com/fuhao009/treesearch-go-troubleshooter/actions/workflows/go-troubleshooter.yml)
+[![GitHub issues](https://img.shields.io/github/issues/fuhao009/treesearch-go-troubleshooter.svg)](https://github.com/fuhao009/treesearch-go-troubleshooter/issues)
 [![Wechat Group](https://img.shields.io/badge/wechat-group-green.svg?logo=wechat)](#Community)
 
 **TreeSearch** is a structure-aware document retrieval library. No vector embeddings. No chunk splitting. SQLite FTS5 keyword matching over document tree structures. Supports Markdown, plain text, code files (Python AST + regex, Java/Go/JS/C++ etc.), HTML, XML, JSON, CSV, PDF, and DOCX.
 
 Millisecond-latency search over tens of thousands of documents and large codebases, with structure preservation.
+
+This fork keeps the upstream Python TreeSearch library and adds a production-oriented offline Go troubleshooting runtime under `examples/troubleshooting/`.
 
 ## Installation
 
@@ -38,6 +41,50 @@ for doc in results["documents"]:
     for node in doc["nodes"]:
         print(f"[{node['score']:.2f}] {node['title']}")
         print(f"  {node['text'][:200]}")
+```
+
+## What This Repo Adds
+
+This repository now has two practical tracks:
+
+- `treesearch/`: the original Python structure-aware retrieval library
+- `examples/troubleshooting/go_walker/`: a single-binary offline Go troubleshooter with Gin API, TreeSearch-backed routing, continuous daemon jobs, pure-Go host collectors, and experience import/export
+
+Useful entry points:
+
+- [examples/troubleshooting/README.md](examples/troubleshooting/README.md): end-to-end runtime usage
+- [examples/troubleshooting/AGENTS.md](examples/troubleshooting/AGENTS.md): architecture and operations log
+- [分析.md](分析.md): source-level analysis of the Python TreeSearch core
+
+## Offline Go Troubleshooter
+
+The troubleshooting runtime is designed for long-running offline diagnosis:
+
+- import Markdown runbooks into SQLite/FTS
+- search or route to one or more troubleshooting trees
+- execute fenced `tsdiag` action blocks without shelling out
+- persist execution results as JSON experience records
+- continuously run daemon jobs and generate new trees from repeated evidence
+
+Quick start:
+
+```bash
+cd examples/troubleshooting/go_walker
+go build
+
+./go_walker serve \
+  --listen 127.0.0.1:19065 \
+  --db ../indexes/service.db \
+  --record-dir ../records \
+  --generated-dir ../records/generated_trees
+
+curl -s -X POST http://127.0.0.1:19065/api/v1/playbooks/import \
+  -H 'Content-Type: application/json' \
+  -d '{"paths":["../playbooks/*.md"],"force":true}'
+
+curl -s -X POST http://127.0.0.1:19065/api/v1/run \
+  -H 'Content-Type: application/json' \
+  -d '{"doc_id":"host_anomaly_runbook","timeout_seconds":10}'
 ```
 
 ## Why TreeSearch?
